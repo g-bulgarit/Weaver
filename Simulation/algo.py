@@ -1,13 +1,14 @@
 def bresenham_line(x0, y0, x1, y1):
     """
-    Return all pixels between (x0, y0) and (x1, y1),
-    Using just addition.
-    :param x0:
-    :param y0:
-    :param x1:
-    :param y1:
-    :return:
+    Return all pixels between (x0, y0) and (x1, y1) as a list.
+
+    :param x0: Self explanatory.
+    :param y0: Self explanatory.
+    :param x1: Self explanatory.
+    :param y1: Self explanatory.
+    :return: List of pixel coordinate tuples.
     """
+
     steep = abs(y1 - y0) > abs(x1 - x0)
     if steep:
         x0, y0 = y0, x0
@@ -26,15 +27,15 @@ def bresenham_line(x0, y0, x1, y1):
 
     delta_x = x1 - x0
     delta_y = abs(y1 - y0)
-    error = -delta_x / 2
+    error = - delta_x / 2
     y = y0
 
     line = []
     for x in range(x0, x1 + 1):
         if steep:
-            line.append((y,x))
+            line.append((y, x))
         else:
-            line.append((x,y))
+            line.append((x, y))
 
         error = error + delta_y
         if error > 0:
@@ -45,8 +46,15 @@ def bresenham_line(x0, y0, x1, y1):
         line.reverse()
     return line
 
+
 def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
-    import numpy as np
+    """
+    Function that calculates the value of a line, in terms of pixel intensity.
+    :param base_img: Image to calculate from.
+    :param peg1_tuple: (x, y) of point 1.
+    :param peg2_tuple: (x, y) of point 2.
+    :return: Integer value of the line.
+    """
     line_value = 0
     gscale_img = base_img.convert('L')
     x_0, y_0 = peg1_tuple
@@ -58,7 +66,15 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
 
     return line_value
 
-def set_all_pixels_white(input_image, pos1, pos2):
+
+def set_all_pixels_black(input_image, pos1, pos2):
+    """
+    Function that sets all pixels between two points black.
+    :param input_image: Image to draw on.
+    :param pos1: (x, y) of point 1.
+    :param pos2: (x, y) of point 2.
+    :return: The newly drawn on image.
+    """
     from PIL import ImageDraw
     x_0, y_0 = pos1
     x_1, y_1 = pos2
@@ -68,10 +84,16 @@ def set_all_pixels_white(input_image, pos1, pos2):
         draw_image.point(pixel, fill=(0, 0, 0))
     return input_image
 
-def select_next_peg(image, list_of_pegs, starting_peg):
-    # from current_peg, get values of the row of pixels between this peg
-    # and all others, find out which peg results in the highest value,
-    # select that peg to be the next peg.
+
+def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
+    """
+    Function that decides which peg will be jumped to next using the color values of the pixels.
+    :param image: Input image to work on.
+    :param list_of_pegs: List of the locations of all pegs.
+    :param starting_peg: Which peg to start on (from config...)
+    :param clean_image: Optional - if a blank image is passed, an "as-is" output image will also be shown.
+    :return: The next peg, as integer.
+    """
     start_pos = list_of_pegs[starting_peg]  # get a tuple of (x, y) coords
     value_list = []
 
@@ -85,19 +107,42 @@ def select_next_peg(image, list_of_pegs, starting_peg):
 
     next_peg = value_list.index(max(value_list))
 
-    # set the pixels in the image between these two lines to be full white...
-    new_image = set_all_pixels_white(image,
+    # set the pixels in the image between these two lines to be full black...
+    new_image = set_all_pixels_black(image,
                                      list_of_pegs[starting_peg],
                                      list_of_pegs[next_peg])
-    return new_image, next_peg
+
+    if clean_image is not None:
+        clean_image = set_all_pixels_black(clean_image,
+                                           list_of_pegs[starting_peg],
+                                           list_of_pegs[next_peg])
+        return new_image, next_peg, clean_image
+    else:
+        return new_image, next_peg
 
 
-def get_pattern(image, list_of_pegs, starting_peg, num_iterations):
-    next = starting_peg
+def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=None):
+    """
+    Function that gets a move-list to create the yarn portrait, peg by peg.
+    :param image: Image to work on.
+    :param list_of_pegs: List of the locations of all pegs.
+    :param starting_peg: Which peg to start on (from config...)
+    :param num_iterations: How many moves to do.
+    :param clean_image: Optional - if a blank image is passed, an "as-is" output image will also be shown.
+
+    :return: A list of pegs, in order, following which - the output image can be achieved.
+    """
+    next_peg = starting_peg
     next_img = image
     move_list = []
-    for iteration in range(num_iterations):
-        next_img, next = select_next_peg(next_img, list_of_pegs, next)
-        move_list.append(next)
+    if clean_image is not None:
+        clean_image = clean_image
+        for iteration in range(num_iterations):
+            next_img, next_peg, clean_image = select_next_peg(next_img, list_of_pegs, next_peg, clean_image=clean_image)
+            move_list.append(next_peg)
+    else:
+        for iteration in range(num_iterations):
+            next_img, next_peg = select_next_peg(next_img, list_of_pegs, next_peg, clean_image=clean_image)
+            move_list.append(next_peg)
 
     return move_list
