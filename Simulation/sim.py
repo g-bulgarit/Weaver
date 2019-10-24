@@ -72,9 +72,12 @@ if __name__ == "__main__":
 
     config = load_configuration()
     starting_peg = int(config['algo']['starting_peg'])
+    num_iterations = int(config['algo']['num_iterations'])
 
     image, point_list = prepare_image(path_to_image, config)
 
 
     print(point_list)
-    select_next_peg(image, point_list, starting_peg)
+    pattern = get_pattern(image, point_list, starting_peg, num_iterations)
+    print(pattern)
+

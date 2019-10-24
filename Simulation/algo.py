@@ -1,4 +1,13 @@
 def bresenham_line(x0, y0, x1, y1):
+    """
+    Return all pixels between (x0, y0) and (x1, y1),
+    Using just addition.
+    :param x0:
+    :param y0:
+    :param x1:
+    :param y1:
+    :return:
+    """
     steep = abs(y1 - y0) > abs(x1 - x0)
     if steep:
         x0, y0 = y0, x0
@@ -63,8 +72,18 @@ def select_next_peg(image, list_of_pegs, starting_peg):
         else:
             value_list.append(get_pixel_values_p2p(image, start_pos, point))
 
-    
 
 
-    next_peg = None
+
+    next_peg = value_list.index(max(value_list))
     return next_peg
+
+
+def get_pattern(image, list_of_pegs, starting_peg, num_iterations):
+    next = starting_peg
+    move_list = []
+    for iteration in range(num_iterations):
+        next = select_next_peg(image, list_of_pegs, next)
+        move_list.append(next)
+
+    return move_list
