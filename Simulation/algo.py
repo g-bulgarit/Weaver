@@ -100,7 +100,7 @@ def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
     for point in list_of_pegs:
         if point == start_pos:
             # Skip 'this' peg
-            pass
+            value_list.append(0)
         else:
             value = get_pixel_values_p2p(image, start_pos, point)
             value_list.append(value)
