@@ -32,7 +32,10 @@ def draw_points_on_circle(config_obj, center_tuple, radius, num_points, base_img
         # Calculate the point coordinates on the circle
         point_x = center_x + (radius * cos(radians(angle)))
         point_y = center_y + (radius * sin(radians(angle)))
-        point_coords = (point_x, point_y)
+
+        x_rounded = int(round(point_x, 0))
+        y_rounded = int(round(point_y, 0))
+        point_coords = (x_rounded, y_rounded)
 
         peg_point_list.append(point_coords)
 
@@ -63,9 +66,15 @@ def prepare_image(path_to_image_file, config_obj):
 
 
 if __name__ == "__main__":
+    from Simulation.algo import *
 
     path_to_image = r"Koala.jpg"
 
     config = load_configuration()
+    starting_peg = int(config['algo']['starting_peg'])
+
     image, point_list = prepare_image(path_to_image, config)
+
+
     print(point_list)
+    select_next_peg(image, point_list, starting_peg)
