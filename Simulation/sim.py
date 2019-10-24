@@ -48,7 +48,7 @@ def draw_points_on_circle(config_obj, center_tuple, radius, num_points, base_img
 
 
 def prepare_image(path_to_image_file, config_obj):
-    from PIL import Image
+    from PIL import Image, ImageDraw
 
     pegs_to_draw = int(config_obj['algo']['peg_number'])
     img_size = int(config_obj['algo']['image_resize_square'])
@@ -67,6 +67,8 @@ def prepare_image(path_to_image_file, config_obj):
 
 if __name__ == "__main__":
     from Simulation.algo import *
+    from PIL import Image
+    import numpy as np
 
     path_to_image = r"Koala.jpg"
 
@@ -79,5 +81,15 @@ if __name__ == "__main__":
 
     print(point_list)
     pattern = get_pattern(image, point_list, starting_peg, num_iterations)
+
+    old_image = Image.open(path_to_image).resize((1600, 1600))
+    old_image_buf = np.asarray(old_image)
+    image_buf = np.asarray(image)
+
+    diff = image_buf - old_image_buf
+
+    final_image = Image.fromarray(diff)
+
+    final_image.show()
     print(pattern)
 

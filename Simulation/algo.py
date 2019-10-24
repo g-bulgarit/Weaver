@@ -58,6 +58,16 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
 
     return line_value
 
+def set_all_pixels_white(input_image, pos1, pos2):
+    from PIL import ImageDraw
+    x_0, y_0 = pos1
+    x_1, y_1 = pos2
+    list_of_pixels_in_line = bresenham_line(x_0, y_0, x_1, y_1)
+    draw_image = ImageDraw.Draw(input_image)
+    for pixel in list_of_pixels_in_line:
+        draw_image.point(pixel, fill=(0, 0, 0))
+    return input_image
+
 def select_next_peg(image, list_of_pegs, starting_peg):
     # from current_peg, get values of the row of pixels between this peg
     # and all others, find out which peg results in the highest value,
@@ -70,20 +80,24 @@ def select_next_peg(image, list_of_pegs, starting_peg):
             # Skip 'this' peg
             pass
         else:
-            value_list.append(get_pixel_values_p2p(image, start_pos, point))
-
-
-
+            value = get_pixel_values_p2p(image, start_pos, point)
+            value_list.append(value)
 
     next_peg = value_list.index(max(value_list))
-    return next_peg
+
+    # set the pixels in the image between these two lines to be full white...
+    new_image = set_all_pixels_white(image,
+                                     list_of_pegs[starting_peg],
+                                     list_of_pegs[next_peg])
+    return new_image, next_peg
 
 
 def get_pattern(image, list_of_pegs, starting_peg, num_iterations):
     next = starting_peg
+    next_img = image
     move_list = []
     for iteration in range(num_iterations):
-        next = select_next_peg(image, list_of_pegs, next)
+        next_img, next = select_next_peg(next_img, list_of_pegs, next)
         move_list.append(next)
 
     return move_list
