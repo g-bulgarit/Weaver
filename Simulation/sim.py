@@ -67,20 +67,20 @@ def prepare_image(path_to_image_file, config_obj):
 
 if __name__ == "__main__":
     from Simulation.algo import *
-    from PIL import Image
+    from PIL import Image, ImageOps
     import numpy as np
 
-    path_to_image = r"Koala.jpg"
+    path_to_image = r"Marilyn.jpg"
 
     config = load_configuration()
     starting_peg = int(config['algo']['starting_peg'])
     num_iterations = int(config['algo']['num_iterations'])
 
     image, point_list = prepare_image(path_to_image, config)
-
+    clean_image = Image.new('RGB', (1600, 1600), color=(255, 255, 255))
 
     print(point_list)
-    pattern = get_pattern(image, point_list, starting_peg, num_iterations)
+    pattern = get_pattern(image, point_list, starting_peg, num_iterations, clean_image=clean_image)
 
     old_image = Image.open(path_to_image).resize((1600, 1600))
     old_image_buf = np.asarray(old_image)
@@ -89,7 +89,10 @@ if __name__ == "__main__":
     diff = image_buf - old_image_buf
 
     final_image = Image.fromarray(diff)
+    final_image = ImageOps.invert(final_image)
 
     final_image.show()
+    clean_image.show()
+
     print(pattern)
 
