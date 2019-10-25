@@ -69,24 +69,26 @@ def prepare_image(path_to_image_file, config_obj):
 
 def post_process_image(image, config, begin_timestamp):
     from PIL import ImageDraw
-    import time
+    import datetime
     peg_number = config['algo']['peg_number']
     num_iterations = config['algo']['num_iterations']
     frame_factor = config['algo']['frame_factor']
-    end_timestamp = time.time()
+    end_timestamp = datetime.datetime.now()
     total_time_seconds = end_timestamp - begin_timestamp
+    minutes, seconds = total_time_seconds.seconds // 60 % 60, total_time_seconds.seconds
+    formatted_time = str(minutes) + ":" + str(seconds)
 
-    display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\nTotal time [sec]: {}".format(peg_number,
+    display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\nTotal time [M:S]: {}".format(peg_number,
                                                                                              num_iterations,
                                                                                              frame_factor,
-                                                                                             total_time_seconds)
+                                                                                             formatted_time)
     ImageDraw.Draw(image).text((20, 20), display_text, fill=(0, 0, 0))
     return image
 
 
 def simulate_weave():
-    import time
-    starting_time = time.time()
+    import datetime
+    starting_time = datetime.datetime.now()
 
     import Simulation.algo
     path_to_image = r"woman3.jpg"
