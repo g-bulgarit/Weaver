@@ -62,13 +62,12 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     frame_factor = float(config_reader['algo']['frame_factor'])
 
     line_value = 0
-    gscale_img = base_img.convert('L')
     x_0, y_0 = peg1_tuple
     x_1, y_1 = peg2_tuple
     list_of_pixels_in_line = bresenham_line(x_0, y_0, x_1, y_1)
 
     for pixel_coords in list_of_pixels_in_line:
-        line_value += gscale_img.getpixel(pixel_coords)
+        line_value += base_img.getpixel(pixel_coords)
 
     line_length = len(list_of_pixels_in_line)
 
@@ -90,7 +89,7 @@ def set_all_pixels_black(input_image, pos1, pos2):
     list_of_pixels_in_line = bresenham_line(x_0, y_0, x_1, y_1)
     draw_image = ImageDraw.Draw(input_image)
     for pixel in list_of_pixels_in_line:
-        draw_image.point(pixel, fill=(0, 0, 0))
+        draw_image.point(pixel, fill=(0))
     return input_image
 
 

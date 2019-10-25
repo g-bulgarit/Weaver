@@ -55,7 +55,7 @@ def prepare_image(path_to_image_file, config_obj):
     circle_diameter = int(config_obj['algo']['circle_diameter'])
 
     image_file = Image.open(path_to_image_file)
-    base_img = image_file.resize((img_size, img_size))
+    base_img = image_file.resize((img_size, img_size)).convert('L')
 
     base_img = ImageOps.invert(base_img)
     clean_image = Image.new('RGB', (img_size, img_size), color=(255, 255, 255))
