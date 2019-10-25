@@ -75,7 +75,8 @@ def post_process_image(image, config, begin_timestamp):
     frame_factor = config['algo']['frame_factor']
     end_timestamp = datetime.datetime.now()
     total_time_seconds = end_timestamp - begin_timestamp
-    minutes, seconds = total_time_seconds.seconds // 60 % 60, total_time_seconds.seconds
+    minutes = total_time_seconds.seconds // 60 % 60
+    seconds = total_time_seconds.seconds - 60 * minutes
     formatted_time = str(minutes) + ":" + str(seconds)
 
     display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\nTotal time [M:S]: {}".format(peg_number,
