@@ -67,19 +67,27 @@ def prepare_image(path_to_image_file, config_obj):
                                             base_img)
     return base_img, clean_image, peg_points_list
 
-def post_process_image(image, config):
+def post_process_image(image, config, begin_timestamp):
     from PIL import ImageDraw
+    import time
     peg_number = config['algo']['peg_number']
     num_iterations = config['algo']['num_iterations']
     frame_factor = config['algo']['frame_factor']
+    end_timestamp = time.time()
+    total_time_seconds = end_timestamp - begin_timestamp
 
-    display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\n".format(peg_number, num_iterations, frame_factor)
+    display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\nTotal time [sec]: {}".format(peg_number,
+                                                                                             num_iterations,
+                                                                                             frame_factor,
+                                                                                             total_time_seconds)
     ImageDraw.Draw(image).text((20, 20), display_text, fill=(0, 0, 0))
     return image
 
 
 def simulate_weave():
     import time
+    starting_time = time.time()
+
     import Simulation.algo
     path_to_image = r"woman3.jpg"
 
@@ -91,7 +99,7 @@ def simulate_weave():
 
     print(point_list)
     pattern = Simulation.algo.get_pattern(image, point_list, starting_peg, num_iterations, clean_image=clean_image)
-    post_process_image(clean_image, config)
+    post_process_image(clean_image, config, starting_time)
     clean_image.show()
 
     return pattern
@@ -99,4 +107,5 @@ def simulate_weave():
 
 if __name__ == "__main__":
     final_pattern = simulate_weave()
+    print(final_pattern)
 
