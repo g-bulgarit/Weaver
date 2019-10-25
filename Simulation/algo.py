@@ -55,6 +55,12 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     :param peg2_tuple: (x, y) of point 2.
     :return: Integer value of the line.
     """
+    import configparser
+    config_reader = configparser.ConfigParser()
+    config_reader.read('config.ini')
+
+    frame_factor = float(config_reader['algo']['frame_factor'])
+
     line_value = 0
     gscale_img = base_img.convert('L')
     x_0, y_0 = peg1_tuple
@@ -64,7 +70,10 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     for pixel_coords in list_of_pixels_in_line:
         line_value += gscale_img.getpixel(pixel_coords)
 
-    return line_value
+    line_length = len(list_of_pixels_in_line)
+
+    return int(round(line_value/(line_length/frame_factor), 1))
+    # return line_value
 
 
 def set_all_pixels_black(input_image, pos1, pos2):
@@ -138,7 +147,10 @@ def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=N
     if clean_image is not None:
         clean_image = clean_image
         for iteration in range(num_iterations):
-            next_img, next_peg, clean_image = select_next_peg(next_img, list_of_pegs, next_peg, clean_image=clean_image)
+            calculated_peg, next_peg, clean_image = select_next_peg(next_img,
+                                                                    list_of_pegs,
+                                                                    next_peg,
+                                                                    clean_image=clean_image)
             move_list.append(next_peg)
     else:
         for iteration in range(num_iterations):

@@ -48,7 +48,7 @@ def draw_points_on_circle(config_obj, center_tuple, radius, num_points, base_img
 
 
 def prepare_image(path_to_image_file, config_obj):
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageOps
 
     pegs_to_draw = int(config_obj['algo']['peg_number'])
     img_size = int(config_obj['algo']['image_resize_square'])
@@ -57,42 +57,46 @@ def prepare_image(path_to_image_file, config_obj):
     image_file = Image.open(path_to_image_file)
     base_img = image_file.resize((img_size, img_size))
 
-    peg_points_list = draw_points_on_circle(config,
+    base_img = ImageOps.invert(base_img)
+    clean_image = Image.new('RGB', (img_size, img_size), color=(255, 255, 255))
+
+    peg_points_list = draw_points_on_circle(config_obj,
                                             (img_size/2, img_size/2),
                                             circle_diameter/2,
                                             pegs_to_draw,
                                             base_img)
-    return base_img, peg_points_list
+    return base_img, clean_image, peg_points_list
+
+def post_process_image(image, config):
+    from PIL import ImageDraw
+    peg_number = config['algo']['peg_number']
+    num_iterations = config['algo']['num_iterations']
+    frame_factor = config['algo']['frame_factor']
+
+    display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\n".format(peg_number, num_iterations, frame_factor)
+    ImageDraw.Draw(image).text((20, 20), display_text, fill=(0, 0, 0))
+    return image
 
 
-if __name__ == "__main__":
-    from Simulation.algo import *
-    from PIL import Image, ImageOps
-    import numpy as np
-
-    path_to_image = r"Marilyn.jpg"
+def simulate_weave():
+    import time
+    import Simulation.algo
+    path_to_image = r"woman3.jpg"
 
     config = load_configuration()
     starting_peg = int(config['algo']['starting_peg'])
     num_iterations = int(config['algo']['num_iterations'])
 
-    image, point_list = prepare_image(path_to_image, config)
-    clean_image = Image.new('RGB', (1600, 1600), color=(255, 255, 255))
+    image, clean_image, point_list = prepare_image(path_to_image, config)
 
     print(point_list)
-    pattern = get_pattern(image, point_list, starting_peg, num_iterations, clean_image=clean_image)
-
-    old_image = Image.open(path_to_image).resize((1600, 1600))
-    old_image_buf = np.asarray(old_image)
-    image_buf = np.asarray(image)
-
-    diff = image_buf - old_image_buf
-
-    final_image = Image.fromarray(diff)
-    final_image = ImageOps.invert(final_image)
-
-    final_image.show()
+    pattern = Simulation.algo.get_pattern(image, point_list, starting_peg, num_iterations, clean_image=clean_image)
+    post_process_image(clean_image, config)
     clean_image.show()
 
-    print(pattern)
+    return pattern
+
+
+if __name__ == "__main__":
+    final_pattern = simulate_weave()
 
