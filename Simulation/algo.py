@@ -89,7 +89,7 @@ def set_all_pixels_black(input_image, pos1, pos2):
     list_of_pixels_in_line = bresenham_line(x_0, y_0, x_1, y_1)
     draw_image = ImageDraw.Draw(input_image)
     for pixel in list_of_pixels_in_line:
-        draw_image.point(pixel, fill=(0))
+        draw_image.point(pixel, fill=0)
     return input_image
 
 
