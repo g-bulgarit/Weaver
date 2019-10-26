@@ -72,7 +72,6 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     line_length = len(list_of_pixels_in_line)
 
     return int(round(line_value/(line_length/frame_factor), 1))
-    # return line_value
 
 
 def set_all_pixels_black(input_image, pos1, pos2):
@@ -129,7 +128,7 @@ def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
         return new_image, next_peg
 
 
-def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=None):
+def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=None, do_plot=False):
     """
     Function that gets a move-list to create the yarn portrait, peg by peg.
     :param image: Image to work on.
@@ -140,6 +139,9 @@ def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=N
 
     :return: A list of pegs, in order, following which - the output image can be achieved.
     """
+    import numpy as np
+    import matplotlib.pyplot as plt
+
     next_peg = starting_peg
     next_img = image
     move_list = []
@@ -151,9 +153,17 @@ def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=N
                                                                     next_peg,
                                                                     clean_image=clean_image)
             move_list.append(next_peg)
+            if do_plot:
+                plt.clf()
+                plt.imshow(np.asarray(clean_image))
+                plt.pause(0.01)
     else:
         for iteration in range(num_iterations):
             next_img, next_peg = select_next_peg(next_img, list_of_pegs, next_peg, clean_image=clean_image)
             move_list.append(next_peg)
+            if do_plot:
+                plt.clf()
+                plt.imshow(np.asarray(next_img))
+                plt.pause(0.01)
 
     return move_list

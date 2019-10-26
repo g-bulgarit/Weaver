@@ -42,17 +42,25 @@ def draw_points_on_circle(config_obj, center_tuple, radius, num_points, base_img
         draw_point(point_coords, point_radius, point_img)
 
     if config_obj.getboolean('debug', 'show_image_with_pegs'):
-        combined_image = Image.blend(base_img, point_img, 0.5)
+        combined_image = Image.blend(base_img.convert('RGB'), point_img, 0.5)
         combined_image.show()
     return peg_point_list
 
 
 def prepare_image(path_to_image_file, config_obj):
     from PIL import Image, ImageOps
+    import matplotlib
+    matplotlib.use('TkAgg')
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from time import sleep
 
     pegs_to_draw = int(config_obj['algo']['peg_number'])
     img_size = int(config_obj['algo']['image_resize_square'])
     circle_diameter = int(config_obj['algo']['circle_diameter'])
+    show_algorithm_progress = config_obj.getboolean('debug', 'show_algorithm_progress')
+
+
 
     image_file = Image.open(path_to_image_file)
     base_img = image_file.resize((img_size, img_size)).convert('L')
@@ -60,12 +68,17 @@ def prepare_image(path_to_image_file, config_obj):
     base_img = ImageOps.invert(base_img)
     clean_image = Image.new('RGB', (img_size, img_size), color=(255, 255, 255))
 
+    if show_algorithm_progress:
+        plt.ion()
+        plt.imshow(np.asarray(clean_image))
+        plt.pause(0.2)
+
     peg_points_list = draw_points_on_circle(config_obj,
                                             (img_size/2, img_size/2),
                                             circle_diameter/2,
                                             pegs_to_draw,
                                             base_img)
-    return base_img, clean_image, peg_points_list
+    return base_img, clean_image, peg_points_list, show_algorithm_progress
 
 def post_process_image(image, config, begin_timestamp):
     from PIL import ImageDraw
@@ -92,16 +105,21 @@ def simulate_weave():
     starting_time = datetime.datetime.now()
 
     import Simulation.algo
-    path_to_image = r"woman3.jpg"
+    path_to_image = r"marilyn2.jpg"
 
     config = load_configuration()
     starting_peg = int(config['algo']['starting_peg'])
     num_iterations = int(config['algo']['num_iterations'])
 
-    image, clean_image, point_list = prepare_image(path_to_image, config)
+    image, clean_image, point_list, do_plot = prepare_image(path_to_image, config)
 
     print(point_list)
-    pattern = Simulation.algo.get_pattern(image, point_list, starting_peg, num_iterations, clean_image=clean_image)
+    pattern = Simulation.algo.get_pattern(image,
+                                          point_list,
+                                          starting_peg,
+                                          num_iterations,
+                                          clean_image=clean_image,
+                                          do_plot=do_plot)
     post_process_image(clean_image, config, starting_time)
     clean_image.show()
 
