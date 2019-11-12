@@ -97,7 +97,7 @@ def post_process_image(image, config, begin_timestamp):
                    "Iterations: {}\n" \
                    "Frame factor: {}\n" \
                    "Total time [M:S]: {}\n" \
-                   "Image Scale".format(peg_number,
+                   "Image scale: {}".format(peg_number,
                                         num_iterations,
                                         frame_factor,
                                         formatted_time,
