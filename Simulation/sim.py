@@ -91,11 +91,18 @@ def post_process_image(image, config, begin_timestamp):
     minutes = total_time_seconds.seconds // 60 % 60
     seconds = total_time_seconds.seconds - 60 * minutes
     formatted_time = str(minutes) + ":" + str(seconds)
+    image_scale = config['algo']['image_resize_square']
 
-    display_text = "Pegs: {}\nIterations: {}\nFrame factor: {}\nTotal time [M:S]: {}".format(peg_number,
-                                                                                             num_iterations,
-                                                                                             frame_factor,
-                                                                                             formatted_time)
+    display_text = "Pegs: {}\n" \
+                   "Iterations: {}\n" \
+                   "Frame factor: {}\n" \
+                   "Total time [M:S]: {}\n" \
+                   "Image Scale".format(peg_number,
+                                        num_iterations,
+                                        frame_factor,
+                                        formatted_time,
+                                        image_scale)
+
     ImageDraw.Draw(image).text((20, 20), display_text, fill=(0, 0, 0))
     return image
 
