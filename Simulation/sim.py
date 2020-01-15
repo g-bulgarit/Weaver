@@ -112,7 +112,7 @@ def simulate_weave():
     starting_time = datetime.datetime.now()
 
     import Simulation.algo
-    path_to_image = r"marilyn2.jpg"
+    path_to_image = r"hcon.png"
 
     config = load_configuration()
     starting_peg = int(config['algo']['starting_peg'])
@@ -136,4 +136,7 @@ def simulate_weave():
 if __name__ == "__main__":
     final_pattern = simulate_weave()
     print(final_pattern)
+    # Todo:
+    # - Make contrast function to better represent real life color values of overlapping strings
+    # - Implement ignore_nearest_neighbours from the configuration file.
 
