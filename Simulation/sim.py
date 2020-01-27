@@ -1,8 +1,4 @@
-def load_configuration():
-    import configparser
-    config_reader = configparser.ConfigParser()
-    config_reader.read('config.ini')
-    return config_reader
+from Simulation.algo import load_configuration
 
 
 def draw_point(center_tuple, point_radius, base_image):
@@ -19,11 +15,12 @@ def draw_point(center_tuple, point_radius, base_image):
     draw.ellipse(ellipse_size, outline=None, fill=(255, 20, 20))
 
 
-def draw_points_on_circle(config_obj, center_tuple, radius, num_points, base_img):
+def draw_points_on_circle(center_tuple, radius, num_points, base_img):
     from math import sin, cos, radians
     from PIL import Image
     center_x, center_y = center_tuple
-    point_radius = int(config_obj['visual']['pegs_radius'])
+    cfg = load_configuration()
+    point_radius = int(cfg['visual']['pegs_radius'])
 
     point_img = Image.new('RGB', base_img.size, (0, 0, 0))
     peg_point_list = []
@@ -41,24 +38,24 @@ def draw_points_on_circle(config_obj, center_tuple, radius, num_points, base_img
 
         draw_point(point_coords, point_radius, point_img)
 
-    if config_obj.getboolean('debug', 'show_image_with_pegs'):
+    if cfg.getboolean('debug', 'show_image_with_pegs'):
         combined_image = Image.blend(base_img.convert('RGB'), point_img, 0.5)
         combined_image.show()
     return peg_point_list
 
 
-def prepare_image(path_to_image_file, config_obj):
+def prepare_image(path_to_image_file):
     from PIL import Image, ImageOps
     import matplotlib
     matplotlib.use('TkAgg')
     import matplotlib.pyplot as plt
     import numpy as np
-    from time import sleep
+    cfg = load_configuration()
 
-    pegs_to_draw = int(config_obj['algo']['peg_number'])
-    img_size = int(config_obj['algo']['image_resize_square'])
-    circle_diameter = int(config_obj['algo']['circle_diameter'])
-    show_algorithm_progress = config_obj.getboolean('debug', 'show_algorithm_progress')
+    pegs_to_draw = int(cfg['algo']['peg_number'])
+    img_size = int(cfg['algo']['image_resize_square'])
+    circle_diameter = int(cfg['algo']['circle_diameter'])
+    show_algorithm_progress = cfg.getboolean('debug', 'show_algorithm_progress')
 
 
 
@@ -66,44 +63,42 @@ def prepare_image(path_to_image_file, config_obj):
     base_img = image_file.resize((img_size, img_size)).convert('L')
 
     base_img = ImageOps.invert(base_img)
-    clean_image = Image.new('RGB', (img_size, img_size), color=(255, 255, 255))
+    clean_image = Image.new('L', (img_size, img_size), color=(255))
 
     if show_algorithm_progress:
         plt.ion()
-        plt.imshow(np.asarray(clean_image))
+        plt.imshow(np.asarray(base_img), cmap='Greys')
         plt.pause(0.2)
 
-    peg_points_list = draw_points_on_circle(config_obj,
-                                            (img_size/2, img_size/2),
+    peg_points_list = draw_points_on_circle((img_size/2, img_size/2),
                                             circle_diameter/2,
                                             pegs_to_draw,
                                             base_img)
-    return base_img, clean_image, peg_points_list, show_algorithm_progress
+    return base_img, clean_image, peg_points_list
 
-def post_process_image(image, config, begin_timestamp):
+def post_process_image(image, begin_timestamp):
     from PIL import ImageDraw
     import datetime
-    peg_number = config['algo']['peg_number']
-    num_iterations = config['algo']['num_iterations']
-    frame_factor = config['algo']['frame_factor']
+    cfg = load_configuration()
+    peg_number = cfg['algo']['peg_number']
+    num_iterations = cfg['algo']['num_iterations']
+    frame_factor = cfg['algo']['frame_factor']
     end_timestamp = datetime.datetime.now()
     total_time_seconds = end_timestamp - begin_timestamp
     minutes = total_time_seconds.seconds // 60 % 60
     seconds = total_time_seconds.seconds - 60 * minutes
     formatted_time = str(minutes) + ":" + str(seconds)
-    image_scale = config['algo']['image_resize_square']
+    image_scale = cfg['algo']['image_resize_square']
+    contrast = int(cfg['algo']['contrast'])
 
-    display_text = "Pegs: {}\n" \
-                   "Iterations: {}\n" \
-                   "Frame factor: {}\n" \
-                   "Total time [M:S]: {}\n" \
-                   "Image scale: {}".format(peg_number,
-                                        num_iterations,
-                                        frame_factor,
-                                        formatted_time,
-                                        image_scale)
+    display_text = f"Pegs: {peg_number}\n" \
+                   f"Iterations: {num_iterations}\n" \
+                   f"Frame factor: {frame_factor}\n" \
+                   f"Total time [M:S]: {formatted_time}\n" \
+                   f"Image scale: {image_scale}\n" \
+                   f"Contrast: {contrast}"
 
-    ImageDraw.Draw(image).text((20, 20), display_text, fill=(0, 0, 0))
+    ImageDraw.Draw(image).text((20, 20), display_text, fill=(0))
     return image
 
 
@@ -112,22 +107,20 @@ def simulate_weave():
     starting_time = datetime.datetime.now()
 
     import Simulation.algo
-    path_to_image = r"hcon.png"
+    path_to_image = r"woman.jpg"
 
-    config = load_configuration()
-    starting_peg = int(config['algo']['starting_peg'])
-    num_iterations = int(config['algo']['num_iterations'])
+    cfg = load_configuration()
+    starting_peg = int(cfg['algo']['starting_peg'])
+    num_iterations = int(cfg['algo']['num_iterations'])
 
-    image, clean_image, point_list, do_plot = prepare_image(path_to_image, config)
+    image, clean_image, point_list = prepare_image(path_to_image)
 
-    print(point_list)
     pattern = Simulation.algo.get_pattern(image,
                                           point_list,
                                           starting_peg,
                                           num_iterations,
-                                          clean_image=clean_image,
-                                          do_plot=do_plot)
-    post_process_image(clean_image, config, starting_time)
+                                          clean_image=clean_image)
+    post_process_image(clean_image, starting_time)
     clean_image.show()
 
     return pattern
@@ -139,4 +132,6 @@ if __name__ == "__main__":
     # Todo:
     # - Make contrast function to better represent real life color values of overlapping strings
     # - Implement ignore_nearest_neighbours from the configuration file.
+    # - AVERAGE SCALING FOR THE COLOR [v]
+
 
