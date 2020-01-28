@@ -150,12 +150,14 @@ def compile_file(pattern, image_name):
     num_iterations = cfg['algo']['num_iterations']
     image_scale = cfg['algo']['image_resize_square']
     contrast = int(cfg['algo']['contrast'])
+    circ_diameter = int(cfg['algo']['circle_diameter'])
 
     # Create header:
     header = f"Peg Numbers: {peg_number}\n" \
              f"Iterations: {num_iterations}\n" \
              f"Image Scale: {image_scale}\n" \
-             f"Contrast: {contrast}\n;"
+             f"Contrast: {contrast}\n" \
+             f"Circle Diameter: {circ_diameter}\n;"
 
     weave_pattern = ", ".join(map(str, pattern))
 
@@ -179,7 +181,7 @@ if __name__ == "__main__":
     # - Make contrast function to better represent real life color values of overlapping strings
     # - Implement ignore_nearest_neighbours from the configuration file.
     # - AVERAGE SCALING FOR THE COLOR [v]
-    # - Make the weave pattern into a file
+    # - Make the weave pattern into a file [V]
     # - Make a parser to read the file and create an image
 
 
