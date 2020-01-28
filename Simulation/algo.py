@@ -74,7 +74,7 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     return (line_value)
 
 
-def set_all_pixels_black(input_image, pos1, pos2, is_diagram=False):
+def set_all_pixels_black(input_image, pos1, pos2):
     """
     Function that sets all pixels between two points black.
     :param input_image: Image to draw on.
@@ -121,14 +121,12 @@ def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
     # set the pixels in the image between these two lines to be full black...
     new_image = set_all_pixels_black(image,
                                      list_of_pegs[starting_peg],
-                                     list_of_pegs[next_peg],
-                                     is_diagram=True)
+                                     list_of_pegs[next_peg])
 
     if clean_image is not None:
         clean_image = set_all_pixels_black(clean_image,
                                            list_of_pegs[starting_peg],
-                                           list_of_pegs[next_peg],
-                                           is_diagram=False)
+                                           list_of_pegs[next_peg])
     return new_image, next_peg, clean_image
 
 
