@@ -102,12 +102,12 @@ def post_process_image(image, begin_timestamp):
     return image
 
 
-def simulate_weave():
+def simulate_weave(path_to_image):
     import datetime
     starting_time = datetime.datetime.now()
 
     import Simulation.algo
-    path_to_image = r"woman.jpg"
+
 
     cfg = load_configuration()
     starting_peg = int(cfg['algo']['starting_peg'])
@@ -125,13 +125,61 @@ def simulate_weave():
 
     return pattern
 
+def compile_file(pattern, image_name):
+    """
+    Function that takes in a pattern and the settings in the configuration folder
+    and creates a sim file containing the pattern and the required settings
+    to recreate the image from scratch.
+    :param pattern: A weave pattern as a list
+    :return: N/A
+    """
+
+    """
+    > File name:
+    
+    Based off of the image name, with additional parameters:
+    <image_name><seed><num_iterations>.wv
+    
+    > File structure:
+    
+    1. Header with all the required settings to re-create the image
+    2. The weave pattern as comma separated values
+    """
+    cfg = load_configuration()
+    peg_number = cfg['algo']['peg_number']
+    num_iterations = cfg['algo']['num_iterations']
+    image_scale = cfg['algo']['image_resize_square']
+    contrast = int(cfg['algo']['contrast'])
+
+    # Create header:
+    header = f"Peg Numbers: {peg_number}\n" \
+             f"Iterations: {num_iterations}\n" \
+             f"Image Scale: {image_scale}\n" \
+             f"Contrast: {contrast}\n;"
+
+    weave_pattern = ", ".join(map(str, pattern))
+
+    # Create file:
+    stripped_img_name = str(image_name.split(".")[0])
+    filename = f"{stripped_img_name}_s{peg_number}_{num_iterations}.wv"
+    try:
+        with open(filename, 'w+') as fp:
+            fp.write(header)
+            fp.write(weave_pattern)
+    except IOError as error_instance:
+        print(error_instance)
+
 
 if __name__ == "__main__":
-    final_pattern = simulate_weave()
-    print(final_pattern)
+    path_to_image = "woman.jpg"
+    final_pattern = simulate_weave(path_to_image)
+    compile_file(final_pattern, path_to_image)
+
     # Todo:
     # - Make contrast function to better represent real life color values of overlapping strings
     # - Implement ignore_nearest_neighbours from the configuration file.
     # - AVERAGE SCALING FOR THE COLOR [v]
+    # - Make the weave pattern into a file
+    # - Make a parser to read the file and create an image
 
 
