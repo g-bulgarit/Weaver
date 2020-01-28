@@ -82,7 +82,6 @@ def post_process_image(image, begin_timestamp):
     cfg = load_configuration()
     peg_number = cfg['algo']['peg_number']
     num_iterations = cfg['algo']['num_iterations']
-    frame_factor = cfg['algo']['frame_factor']
     end_timestamp = datetime.datetime.now()
     total_time_seconds = end_timestamp - begin_timestamp
     minutes = total_time_seconds.seconds // 60 % 60
@@ -93,7 +92,6 @@ def post_process_image(image, begin_timestamp):
 
     display_text = f"Pegs: {peg_number}\n" \
                    f"Iterations: {num_iterations}\n" \
-                   f"Frame factor: {frame_factor}\n" \
                    f"Total time [M:S]: {formatted_time}\n" \
                    f"Image scale: {image_scale}\n" \
                    f"Contrast: {contrast}"
