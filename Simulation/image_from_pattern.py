@@ -1,5 +1,6 @@
-from Simulation.algo import bresenham_line, set_all_pixels_black
+from Simulation.algo import set_all_pixels_black, load_configuration
 from Simulation.sim import draw_points_on_circle
+from gooey import GooeyParser, Gooey
 
 def parse_file(filename):
     with open(filename, "r") as fp:
@@ -19,26 +20,51 @@ def parse_file(filename):
                int(circ_diameter), \
                pattern
 
-if __name__ == "__main__":
+
+def draw_from_pattern(pattern, point_list, canvas, override_contrast=None):
+    cfg = load_configuration()
+    trim_factor = int(cfg['parser']['pattern_trim'])
+    if trim_factor > 100 or trim_factor <= 0:
+        raise Exception("Trim factor is not between 0 and 100")
+    pattern_list = pattern.split(",")
+    pattern_list = pattern_list[0:int(len(pattern_list) * trim_factor/100)]
+    for move in range(len(pattern_list) - 1):
+        set_all_pixels_black(canvas,
+                             point_list[int(pattern_list[move])],
+                             point_list[int(pattern_list[move + 1])],
+                             override_contrast)
+
+
+@Gooey(program_name="Weaver: Pattern to Image")
+def main():
     from PIL import Image
-    import numpy as np
-    import matplotlib.pyplot as plt
-    # Get file
-    filename = "woman_s120_100.wv"
-    # Get params from file
-    peg_number, num_iterations, image_scale, contrast, circ_diameter, pattern = parse_file(filename)
+    parser = GooeyParser(description="Supply .wv file to get the image.")
+    parser.add_argument('Filename', widget="FileChooser")
+    parser.add_argument('--Contrast',
+                        help="Number from 1-100%, defines how dark each line is.",
+                        default=None,
+                        gooey_options={
+                            'validator': {
+                                'test': '1<=int(user_input)<= 100',
+                                'message': 'Contrast must be in the specified range!'
+                            }
+                        }
+                        )
+    args = parser.parse_args()
+
+    peg_number, num_iterations, image_scale, contrast, circ_diameter, pattern = parse_file(args.Filename)
+    if args.Contrast != None:
+        contrast = int(args.Contrast)*255//100
+        print(contrast)
     # Make new image with the correct size
     canvas = Image.new('L', (image_scale, image_scale), color=(255))
     # Get list of points on the circle
-    point_list = draw_points_on_circle((image_scale/2, image_scale/2),
-                          circ_diameter/2,
-                          peg_number,
-                          canvas)
-    # For csv - draw each line as given
-    pattern_list = pattern.split(",")
-    for move in range(len(pattern_list)-1):
-        set_all_pixels_black(canvas,
-                             point_list[int(pattern_list[move])],
-                             point_list[int(pattern_list[move+1])])
-
+    point_list = draw_points_on_circle((image_scale / 2, image_scale / 2),
+                                       circ_diameter / 2,
+                                       peg_number,
+                                       canvas)
+    draw_from_pattern(pattern, point_list, canvas, override_contrast=contrast)
     canvas.show()
+
+if __name__ == "__main__":
+    main()

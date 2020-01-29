@@ -38,7 +38,7 @@ def draw_points_on_circle(center_tuple, radius, num_points, base_img):
 
         draw_point(point_coords, point_radius, point_img)
 
-    if cfg.getboolean('debug', 'show_image_with_pegs'):
+    if cfg.getboolean('debug', 'show_image_with_pegs') and __name__ == "sim":
         combined_image = Image.blend(base_img.convert('RGB'), point_img, 0.5)
         combined_image.show()
     return peg_point_list
@@ -171,7 +171,7 @@ def compile_file(pattern, image_name):
 
 
 if __name__ == "__main__":
-    path_to_image = "woman.jpg"
+    path_to_image = "marya_hc_1.png"
     final_pattern = simulate_weave(path_to_image)
     compile_file(final_pattern, path_to_image)
 

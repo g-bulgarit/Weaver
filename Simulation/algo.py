@@ -74,7 +74,7 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     return (line_value)
 
 
-def set_all_pixels_black(input_image, pos1, pos2):
+def set_all_pixels_black(input_image, pos1, pos2, override_contrast=None):
     """
     Function that sets all pixels between two points black.
     :param input_image: Image to draw on.
@@ -84,7 +84,10 @@ def set_all_pixels_black(input_image, pos1, pos2):
     """
     from PIL import ImageDraw
     cfg = load_configuration()
-    contrast_val = int(cfg['algo']['contrast'])
+    if override_contrast != None:
+        contrast_val = override_contrast
+    else:
+        contrast_val = int(cfg['algo']['contrast'])
     x_0, y_0 = pos1
     x_1, y_1 = pos2
     list_of_pixels_in_line = bresenham_line(x_0, y_0, x_1, y_1)
