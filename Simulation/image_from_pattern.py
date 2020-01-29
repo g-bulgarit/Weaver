@@ -39,7 +39,9 @@ def draw_from_pattern(pattern, point_list, canvas, override_contrast=None, trim_
                              override_contrast)
 
 
-@Gooey(program_name="Weaver: Pattern to Image")
+@Gooey(program_name="Weaver: Pattern to Image",
+       body_bg_color="#FBFBFB",
+       header_bg_color="#E3FFCF")
 def main():
     from PIL import Image
     parser = GooeyParser(description="Supply .wv file to get the image.")
