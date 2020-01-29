@@ -21,11 +21,15 @@ def parse_file(filename):
                pattern
 
 
-def draw_from_pattern(pattern, point_list, canvas, override_contrast=None):
+def draw_from_pattern(pattern, point_list, canvas, override_contrast=None, trim_amt=None):
     cfg = load_configuration()
     trim_factor = int(cfg['parser']['pattern_trim'])
-    if trim_factor > 100 or trim_factor <= 0:
-        raise Exception("Trim factor is not between 0 and 100")
+    if trim_amt != None:
+        trim_factor = trim_amt
+    else:
+        if trim_factor > 100 or trim_factor <= 0:
+            raise Exception("Trim factor is not between 0 and 100")
+
     pattern_list = pattern.split(",")
     pattern_list = pattern_list[0:int(len(pattern_list) * trim_factor/100)]
     for move in range(len(pattern_list) - 1):
@@ -50,12 +54,25 @@ def main():
                             }
                         }
                         )
+    parser.add_argument('--Trim',
+                        help="Number from 1-100%, defines how much of the generated pattern to use.\n"
+                             "Could be beneficial if there are too many windings.",
+                        default=None,
+                        gooey_options={
+                            'validator': {
+                                'test': '1<=int(user_input)<= 100',
+                                'message': 'Pattern trim must be in the specified range!'
+                            }
+                        }
+                        )
     args = parser.parse_args()
 
     peg_number, num_iterations, image_scale, contrast, circ_diameter, pattern = parse_file(args.Filename)
     if args.Contrast != None:
         contrast = int(args.Contrast)*255//100
         print(contrast)
+    if args.Trim != None:
+        trim = int(args.Trim)*255//100
     # Make new image with the correct size
     canvas = Image.new('L', (image_scale, image_scale), color=(255))
     # Get list of points on the circle
@@ -63,7 +80,7 @@ def main():
                                        circ_diameter / 2,
                                        peg_number,
                                        canvas)
-    draw_from_pattern(pattern, point_list, canvas, override_contrast=contrast)
+    draw_from_pattern(pattern, point_list, canvas, override_contrast=contrast, trim_amt=trim)
     canvas.show()
 
 if __name__ == "__main__":
