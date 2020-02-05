@@ -171,15 +171,15 @@ def compile_file(pattern, image_name):
 
 
 if __name__ == "__main__":
-    path_to_image = "marya_hc_1.png"
+    path_to_image = "w.png"
     final_pattern = simulate_weave(path_to_image)
     compile_file(final_pattern, path_to_image)
 
     # Todo:
-    # - Make contrast function to better represent real life color values of overlapping strings
-    # - Implement ignore_nearest_neighbours from the configuration file.
-    # - AVERAGE SCALING FOR THE COLOR [v]
+    # - Make contrast function to better represent color values of overlapping strings [V]
+    # - Implement ignore_nearest_neighbours from the configuration file. (make 'ignore list' and
+    #   check indexes) [V]
     # - Make the weave pattern into a file [V]
-    # - Make a parser to read the file and create an image
+    # - Make a parser to read the file and create an image [V]
 
 

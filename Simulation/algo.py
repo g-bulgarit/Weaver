@@ -1,10 +1,9 @@
-import numpy as np
-
 def load_configuration():
     import configparser
     config_reader = configparser.ConfigParser()
     config_reader.read('config.ini')
     return config_reader
+
 
 def bresenham_line(x0, y0, x1, y1):
     """
@@ -71,7 +70,7 @@ def get_pixel_values_p2p(base_img, peg1_tuple, peg2_tuple):
     line_length = len(list_of_pixels_in_line)
     line_value = np.sum(list_of_intensities)/255/line_length
 
-    return (line_value)
+    return line_value
 
 
 def set_all_pixels_black(input_image, pos1, pos2, override_contrast=None):
@@ -80,11 +79,12 @@ def set_all_pixels_black(input_image, pos1, pos2, override_contrast=None):
     :param input_image: Image to draw on.
     :param pos1: (x, y) of point 1.
     :param pos2: (x, y) of point 2.
+    :param override_contrast: boolean - used for the generate image from pattern utility.
     :return: The newly drawn on image.
     """
     from PIL import ImageDraw
     cfg = load_configuration()
-    if override_contrast != None:
+    if override_contrast is not None:
         contrast_val = override_contrast
     else:
         contrast_val = int(cfg['algo']['contrast'])
@@ -94,9 +94,46 @@ def set_all_pixels_black(input_image, pos1, pos2, override_contrast=None):
     draw_image = ImageDraw.Draw(input_image)
     for pixel in list_of_pixels_in_line:
         color = input_image.getpixel(pixel)
-        draw_image.point(pixel, fill=max(0,color-contrast_val)) # CONTRAST VALUE
+        draw_image.point(pixel, fill=max(0,color-contrast_val))  # CONTRAST VALUE
 
     return input_image
+
+
+def generate_skip_list(current_index):
+    """
+    Bare bones, patch version of a function to skip the n-nearest symmetric neighbors.
+    This can save calculation time, but will limit the overall 'clarity' of the image.
+    :param current_index: Takes in the index in which the simulation is currently at.
+    :return: A list that is a mask of which values to skip (marked with 1)
+    """
+    # Load configuration parameters
+    cfg = load_configuration()
+    peg_amt = int(cfg['algo']['peg_number'])
+    skip_amount = int(cfg['algo']['skip_nearest_neighbours'])
+
+    # Create variables and the mask skeleton
+    output_list = [0 for _ in range(peg_amt)]
+    top_overflow = 0
+    bottom_overflow = 0
+
+    # Check if the list will overflow
+    if current_index + skip_amount > peg_amt:
+        top_overflow = (current_index + skip_amount - peg_amt)
+    if current_index -skip_amount < 0:
+        bottom_overflow = abs(current_index - skip_amount)
+
+    # Build the mask, filling in 1's where needed
+    for index in range(peg_amt):
+        # if overflow:
+        if index < top_overflow:
+            output_list[index] = 1
+        if index > (peg_amt - bottom_overflow):
+            output_list[index] = 1
+        # if between the requested scope:
+        if current_index - skip_amount < index < current_index + skip_amount:
+            output_list[index] = 1
+
+    return output_list
 
 
 def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
@@ -108,11 +145,13 @@ def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
     :param clean_image: Optional - if a blank image is passed, an "as-is" output image will also be shown.
     :return: The next peg, as integer.
     """
+
     start_pos = list_of_pegs[starting_peg]  # get a tuple of (x, y) coords
     value_list = []
+    skip_list = generate_skip_list(starting_peg)
 
-    for point in list_of_pegs:
-        if point == start_pos:
+    for index, point in enumerate(list_of_pegs):
+        if (point == start_pos) or (skip_list[index] == 1):
             # Skip 'this' peg
             value_list.append(0)
         else:
@@ -131,7 +170,6 @@ def select_next_peg(image, list_of_pegs, starting_peg, clean_image=None):
                                            list_of_pegs[starting_peg],
                                            list_of_pegs[next_peg])
     return new_image, next_peg, clean_image
-
 
 
 def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=None):
@@ -153,19 +191,7 @@ def get_pattern(image, list_of_pegs, starting_peg, num_iterations, clean_image=N
     move_list = []
     cfg = load_configuration()
     do_plot = cfg.getboolean('debug', 'show_algorithm_progress')
-    # if clean_image is not None:
-    #     clean_image = clean_image
-    #     for iteration in range(num_iterations):
-    #         calculated_peg, next_peg, clean_image = select_next_peg(next_img,
-    #                                                                 list_of_pegs,
-    #                                                                 next_peg,
-    #                                                                 clean_image=clean_image)
-    #         move_list.append(next_peg)
-    #         if do_plot:
-    #             plt.clf()
-    #             plt.imshow(np.asarray(clean_image))
-    #             plt.pause(0.01)
-    #else:
+
     for iteration in range(num_iterations):
         next_img, next_peg, clean_image = select_next_peg(next_img, list_of_pegs, next_peg, clean_image=clean_image)
         move_list.append(next_peg)
