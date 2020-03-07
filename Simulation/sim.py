@@ -25,10 +25,11 @@ def draw_points_on_circle(center_tuple, radius, num_points, base_img):
     point_img = Image.new('RGB', base_img.size, (0, 0, 0))
     peg_point_list = []
 
+
     for angle in range(0, 360, round(360/num_points)):
         # Calculate the point coordinates on the circle
-        point_x = center_x + (radius * cos(radians(angle)))
-        point_y = center_y + (radius * sin(radians(angle)))
+        point_x = (center_x + (radius * cos(radians(angle))))
+        point_y = (center_y + (radius * sin(radians(angle))))
 
         x_rounded = int(round(point_x, 0))
         y_rounded = int(round(point_y, 0))
@@ -41,6 +42,7 @@ def draw_points_on_circle(center_tuple, radius, num_points, base_img):
     if cfg.getboolean('debug', 'show_image_with_pegs') and __name__ == "sim":
         combined_image = Image.blend(base_img.convert('RGB'), point_img, 0.5)
         combined_image.show()
+
     return peg_point_list
 
 
@@ -181,5 +183,6 @@ if __name__ == "__main__":
     #   check indexes) [V]
     # - Make the weave pattern into a file [V]
     # - Make a parser to read the file and create an image [V]
+	# - Super-resolution for the output image by scaling factor. [V]
 
 

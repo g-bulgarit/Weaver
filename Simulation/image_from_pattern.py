@@ -67,21 +67,44 @@ def main():
                             }
                         }
                         )
+    parser.add_argument('--Resize',
+                        help="Output resolution, results in a square image with the given size.\n",
+                        default=None,
+                        type=int,
+                        gooey_options={
+                            'validator': {
+                                'test': '100<=int(user_input)<= 10000',
+                                'message': 'Resolution should be between 100 and 10,000 pixels.'
+                            }
+                        }
+                        )
     args = parser.parse_args()
 
     peg_number, num_iterations, image_scale, contrast, circ_diameter, pattern = parse_file(args.Filename)
     if args.Contrast != None:
         contrast = int(args.Contrast)*255//100
-        print(contrast)
+
     if args.Trim != None:
         trim = int(args.Trim)*255//100
+    else:
+        trim = None
+
+    if args.Resize != None:
+
+        scale_factor = int(args.Resize) / image_scale
+        image_scale = int(image_scale * scale_factor)
+        circ_diameter = int(circ_diameter*scale_factor)
+
+
     # Make new image with the correct size
     canvas = Image.new('L', (image_scale, image_scale), color=(255))
+
     # Get list of points on the circle
     point_list = draw_points_on_circle((image_scale / 2, image_scale / 2),
                                        circ_diameter / 2,
                                        peg_number,
                                        canvas)
+
     draw_from_pattern(pattern, point_list, canvas, override_contrast=contrast, trim_amt=trim)
     canvas.show()
 
