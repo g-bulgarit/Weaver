@@ -4,3 +4,4 @@
 *.png
 *.bmp
 *.wv
+venv/*
