@@ -5,7 +5,8 @@
 Simulation of woven portraits on pegs, eventually to become an automated machine to weave fabric portraits.
 _____________________________
 ## **Build logs:**
-* First mechanical prototype (17/04/2020)
+
+* [First mechanical prototype (17/04/2020)](Documentation/Prototype_I.md)
 
 <p align="center">
 <img width="750" alt="Progress" src="https://i.imgur.com/Nh6pQkR.jpg">
