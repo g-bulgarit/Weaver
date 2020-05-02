@@ -15,6 +15,7 @@ try:
     while move_ctr < len(lst_pattern):
         gcode_file.write(move_from_to(cfg, "x", previous_move, int(lst_pattern[move_ctr])))
         # do weave
+        gcode_file.write(weave_peg(cfg))
         previous = int(lst_pattern[move_ctr])
         move_ctr +=1
 except Exception as e:

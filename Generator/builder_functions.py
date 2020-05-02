@@ -52,14 +52,32 @@ def move_from_to(cfg, motor, from_pos, to_pos):
     # Create gcode string
     return f"G0 {motor.upper()}{linear_distance:.3f}\n"
 
-def weave_peg():
-    pass
+def weave_peg(cfg):
+    # Calls the weave sequence:
+    #   1. rotate frame <x> degrees to + dir
+    #   2. half turn on the weave motor
+    #   3. rotate frame <2x> degrees to - dir
+    #   4. half turn on the weave motor
+    #   5. rotate frame <x> degree to + dir
 
+    center_angle = 0.5 * cfg["peg_to_degree_ratio"]
+    half_step = center_angle * (np.pi/180) * cfg["peg_radius"]
+    weave_half_turn = 4
+    output_block = ""
+    output_block += ";WEAVE: start\n"
+    output_block += move_from_to(cfg, "X", 0, half_step)
+    output_block += move_from_to(cfg, "Y", 0, weave_half_turn)
+    output_block += move_from_to(cfg, "X", 0, -2* half_step)
+    output_block += move_from_to(cfg, "Y", 0, weave_half_turn)
+    output_block += move_from_to(cfg, "X", 0, half_step)
+    output_block += ";WEAVE: end\n"
+    return output_block
 
 
 if __name__ == "__main__":
+    # some test lines
     movelist = [30,60,30,120, 80, 60, 20, 0]
     previous = 0
     for move in movelist:
-        print(move_from_to("x", previous, move))
+        print(move_from_to(cfg, "x", previous, move))
         previous = move
