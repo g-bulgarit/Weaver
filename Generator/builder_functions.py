@@ -9,6 +9,10 @@ peg_to_degree_ratio = 360/num_pegs
 motor_max_travel = peg_diameter * np.pi  # Full revolution of the frame.
 
 def move_from_to(motor, from_pos, to_pos):
+
+    # Call G91 first!
+    #
+    #
     # Takes in <from> and <to> peg numbers, decides on best way to go,
     # calculates the conversion from radial distance to linear distance
     # generates and returns gcode line.
@@ -35,4 +39,4 @@ def weave_peg():
 
 
 if __name__ == "__main__":
-    print(move_from_to("x",30,40))
+    print(move_from_to("x",40,30))
