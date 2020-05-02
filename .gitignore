@@ -4,4 +4,5 @@
 *.png
 *.bmp
 *.wv
+*.gcode
 venv/*
