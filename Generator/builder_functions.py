@@ -8,6 +8,13 @@ num_pegs = 120
 peg_to_degree_ratio = 360/num_pegs
 motor_max_travel = peg_diameter * np.pi  # Full revolution of the frame.
 
+def generate_base_gcode(file_path):
+    # generate the gcode file with some boilerplate.
+    gcode_file = open(file_path, "w+")
+    gcode_file.write("G91\n")
+    # add more boilerplate here
+    return gcode_file
+
 def move_from_to(motor, from_pos, to_pos):
 
     # Call G91 first!
