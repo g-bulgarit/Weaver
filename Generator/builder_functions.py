@@ -27,32 +27,32 @@ def generate_base_gcode(file_path):
     gcode_file.write(";END: Boilerplate code from the gcode generator\n")
     return gcode_file
 
-def move_from_to(cfg, motor, from_pos, to_pos):
-
-    # Call G91 first!
-    #
-    #
+def move_from_to(cfg, motor, from_pos, to_pos, debug=False):
     # Takes in <from> and <to> peg numbers, decides on best way to go,
     # calculates the conversion from radial distance to linear distance
     # generates and returns gcode line.
 
     direction = 1  # Generally.
+    outstr = ""
 
     delta_pegs = to_pos - from_pos
-    if delta_pegs < 0:
-        direction = -1
-    # check if it's better to go backwards
-    if delta_pegs > cfg["num_pegs"] / 2:
-        direction = -1
-        distance_to_move = np.abs(delta_pegs - cfg["num_pegs"]/2)
+    # if delta_pegs < 0:
+    #     direction = -1
+    # # check if it's better to go backwards
+    # if delta_pegs > cfg["num_pegs"] / 2:
+    #     direction = -1
+        # distance_to_move = np.abs(delta_pegs - cfg["num_pegs"]/2)
 
     # find the center angle
     center_angle = delta_pegs * cfg["peg_to_degree_ratio"]
     linear_distance = center_angle * (np.pi/180) * cfg["peg_radius"]
     # Create gcode string
-    return f"G0 {motor.upper()}{linear_distance:.3f}\n"
+    if debug: outstr+= f";START: Move to peg {to_pos}\n"
+    outstr += f"G0 {motor.upper()}{linear_distance:.3f}\n"
+    if debug: outstr += f";END: Move to peg {to_pos}\n"
+    return outstr
 
-def weave_peg(cfg):
+def weave_peg(cfg, debug=False):
     # Calls the weave sequence:
     #   1. rotate frame <x> degrees to + dir
     #   2. half turn on the weave motor
@@ -64,20 +64,28 @@ def weave_peg(cfg):
     half_step = center_angle * (np.pi/180) * cfg["peg_radius"]
     weave_half_turn = 4
     output_block = ""
-    output_block += ";WEAVE: start\n"
+    if debug: output_block += ";WEAVE: start\n"
     output_block += move_from_to(cfg, "X", 0, half_step)
     output_block += move_from_to(cfg, "Y", 0, weave_half_turn)
     output_block += move_from_to(cfg, "X", 0, -2* half_step)
     output_block += move_from_to(cfg, "Y", 0, weave_half_turn)
     output_block += move_from_to(cfg, "X", 0, half_step)
-    output_block += ";WEAVE: end\n"
+    if debug: output_block += ";WEAVE: end\n"
     return output_block
 
 
 if __name__ == "__main__":
     # some test lines
+
+    cfg = {
+        "num_pegs": 120,
+        "peg_radius": 455,
+        "peg_to_degree_ratio": 3,
+    }
+
     movelist = [30,60,30,120, 80, 60, 20, 0]
     previous = 0
     for move in movelist:
+        print(f"Moving to {move}")
         print(move_from_to(cfg, "x", previous, move))
         previous = move
