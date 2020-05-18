@@ -6,3 +6,6 @@
 *.wv
 *.gcode
 venv/*
+
+# DOCUMENTATION
+*.pdf
