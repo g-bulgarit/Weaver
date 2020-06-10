@@ -16,7 +16,7 @@ def draw_point(center_tuple, point_radius, base_image):
 
 
 def draw_points_on_circle(center_tuple, radius, num_points, base_img):
-    from math import sin, cos, radians
+    from math import sin, cos, radians, floor
     from PIL import Image
     center_x, center_y = center_tuple
     cfg = load_configuration()
@@ -26,7 +26,9 @@ def draw_points_on_circle(center_tuple, radius, num_points, base_img):
     peg_point_list = []
 
 
-    for angle in range(0, 360, round(360/num_points)):
+    for pt in range(0, num_points):
+        delta = 360 / num_points
+        angle = pt * delta
         # Calculate the point coordinates on the circle
         point_x = (center_x + (radius * cos(radians(angle))))
         point_y = (center_y + (radius * sin(radians(angle))))
