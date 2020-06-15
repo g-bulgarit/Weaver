@@ -50,4 +50,5 @@ This happens because the motor needs to work harder to resist the frictional for
 1. A **redesign** of the thread path, minimizing contact with plastic parts, or replacing the contact points with PTFE tubing for a smoother pull on the thread.
 
 2. Moving the frame more slowly, allowing the motor to excert more torque on the thread without skipping steps.
+3. Considering moving to a motor that is rated for higher torque if all else fails.
 
