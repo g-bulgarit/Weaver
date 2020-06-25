@@ -1,5 +1,11 @@
 # **Weaver:** Prototype 2 Test Log
 
+**Goal:**\
+Get the weaver to weave an image of the letter **W** on 50 pegs, 250 iterations.
+
+<div align="center"><img height=200 width=200 src="https://i.imgur.com/k2SK6rh.png"></div>
+
+
 
 # First Testing Phase Summary
 ## **Issues:**
@@ -60,4 +66,5 @@ _______________________________
 
 > Switching to a larger gear ratio without changing the original design means that I had to settle for a lower tooth module, which means that the teeth of the gears are smaller, and therefore more suspectible to wear and breakage.
 
-2. A new "thread path" guide part was printed, it is lined with PTFE tubing and it seems to somewhat reduce the friction in the thread's path to the needle.
+2. A new "thread path" guide part was printed, it is lined with PTFE tubing and it seems to somewhat reduce the friction in the thread's path to the needle.\
+   Ideally, this would also require a redesign to eliminate friction entirely.
