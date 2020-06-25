@@ -6,7 +6,11 @@ Get the weaver to weave an image of the letter **W** on 50 pegs, 250 iterations.
 <div align="center"><img height=200 width=200 src="https://i.imgur.com/k2SK6rh.png"></div>
 
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/NinR-pqOI1g/0.jpg)](https://www.youtube.com/watch?v=NinR-pqOI1g)
+<div align="center">
+  <a href="https://www.youtube.com/watch?NinR-pqOI1g"><img src="https://img.youtube.com/vi/NinR-pqOI1g/0.jpg" alt="Weaver First Test"></a>
+</div>
+
+
 
 
 # First Testing Phase Summary
