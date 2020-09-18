@@ -1,20 +1,19 @@
 # File to hold all functions to generate motion based on the weave pattern.
 import numpy as np
 from Simulation.image_from_pattern import parse_file
+from configparser import ConfigParser
 
-cfg = {
-        "num_pegs" : 0,
-        "peg_radius" : 0,
-        "peg_to_degree_ratio" : 0,
-        "motor_max_travel" : 0,
-      }
 
 def parse_weave_file_wrapper(file_path):
     num_pegs, _, _, _, peg_diameter, pattern = parse_file(file_path)
+
+    wv_cfg = ConfigParser()
+    wv_cfg.read(r"generator_config.ini")
+
+    cfg = dict()
     cfg["num_pegs"] = num_pegs
     cfg["peg_radius"] = peg_diameter/2
-    cfg["peg_to_degree_ratio"] = 360/num_pegs
-    cfg["motor_max_travel"] = peg_diameter * np.pi  # Full revolution of the frame.
+    cfg["steps_per_peg"] = wv_cfg["Steps"]["steps_per_peg"]
     return cfg, pattern
 
 def generate_base_gcode(file_path):
@@ -139,17 +138,23 @@ def weave_peg_absolute(current_loc, debug=False):
     if debug: output_block += ";WEAVE: end\n"
     return output_block
 
-def weave_peg_anti_backlash(debug=False):
-    one_peg_distance = 3.21
+
+def weave_peg_anti_backlash(cfg=None, debug=False):
+    if cfg is not None:
+        one_pin_distance = float(cfg["steps_per_peg"])
+    else:
+        raise Exception("Missing configuration file")
+
+    # Text container:
     output_block = ""
 
-    if debug: output_block += ";WEAVE: start\n"
+    if debug: output_block += ";WEAVE[ANTIBACKLASH]: start\n"
     output_block += move_weavehead(1)
-    output_block += rotate_frame(one_peg_distance)
+    output_block += rotate_frame(one_pin_distance)
     output_block += "G4 P500\n"
     output_block += move_weavehead(0)
     output_block += "G4 P500\n"
-    if debug: output_block += ";WEAVE: end\n"
+    if debug: output_block += ";WEAVE[ANTIBACKLASH]: end\n"
 
     return output_block
 
@@ -166,10 +171,13 @@ def generate_absolute_gcode(gcode_file, pattern):
         gcode_file.write(weave_peg_absolute(pos_dict[int(move)]))
 
 
-def move_p2p_one_dir(previous, next, first=False):
-    num_pegs = 50
-    delta = None
-    one_pin_distance = 3.21
+def move_p2p_one_dir(previous, next, first=False, cfg=None):
+    if cfg is not None:
+        # Take values from config
+        one_pin_distance = float(cfg["steps_per_peg"])
+        num_pegs = cfg["num_pegs"]
+    else:
+        raise Exception("Missing configuration file.")
 
     if int(next) < int(previous):
         delta = (num_pegs - int(previous)) + int(next)
@@ -195,14 +203,14 @@ def generate_relative_gcode(gcode_file, pattern):
         current_move = next_move
 
 
-def generate_antibacklash_gcode(gcode_file, pattern):
+def generate_antibacklash_gcode(gcode_file, pattern, cfg):
     current_move = pattern[0]
-    gcode_file.write(move_p2p_one_dir(0, current_move, first=True))
-    gcode_file.write(weave_peg_anti_backlash())
+    gcode_file.write(move_p2p_one_dir(0, current_move, cfg=cfg, first=True))
+    gcode_file.write(weave_peg_anti_backlash(cfg))
 
     for next_move in pattern[1:]:
-        gcode_file.write(move_p2p_one_dir(current_move, next_move))
-        gcode_file.write(weave_peg_anti_backlash())
+        gcode_file.write(move_p2p_one_dir(current_move, next_move, cfg=cfg))
+        gcode_file.write(weave_peg_anti_backlash(cfg=cfg))
         current_move = next_move
 
 
