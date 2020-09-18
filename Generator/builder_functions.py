@@ -23,24 +23,29 @@ def parse_weave_file_wrapper(file_path):
     cfg["steps_per_peg"] = wv_cfg["Steps"]["steps_per_peg"]
     lst_pattern = pattern.split(",")
 
-    return cfg, lst_pattern
+    return cfg, wv_cfg, lst_pattern
 
 
-def generate_base_gcode(file_path):
+def generate_base_gcode(file_path, cfg_parser):
     """
     Function to generate the header for the gCode file.
     TODO: change functionality with the config file (for other motor drivers...?)
     :param file_path: path where to create the new gcode file in.
     :return: an **OPEN** file handler, ready for writing.
     """
-
     gcode_file = open(file_path, "w+")
-
     gcode_file.write(";START: Boilerplate code from the gcode generator\n")
+
+    # Behaviour per motor driver:
+    motor_driver = str(cfg_parser["Motors"]["motor_driver"])
+    if motor_driver == "TMC":
+        # Set motor current to 595mA to prevent overheating and damage.
+        gcode_file.write("M906 X595 Y595\n")
+
     gcode_file.write("G4 P1000 ;Wait 1Sec.\n")
     gcode_file.write("M201 X25.0 ;Set x axis acceleration to 25.\n")
     gcode_file.write("G4 P1000 ;Wait 1Sec.\n")
-    gcode_file.write("G91 ;Set all axis to relative motion, as it is easier to work with.\n")
+    gcode_file.write("G91 ;Set all axis to relative motion.\n")
     gcode_file.write("G4 P1000 ;Wait 1Sec.\n")
     gcode_file.write(";END: Boilerplate code from the gcode generator\n")
 
