@@ -16,7 +16,7 @@ def draw_point(center_tuple, point_radius, base_image):
 
 
 def draw_points_on_circle(center_tuple, radius, num_points, base_img):
-    from math import sin, cos, radians, floor
+    from numpy import sin, cos, radians
     from PIL import Image
     center_x, center_y = center_tuple
     cfg = load_configuration()
@@ -24,7 +24,6 @@ def draw_points_on_circle(center_tuple, radius, num_points, base_img):
 
     point_img = Image.new('RGB', base_img.size, (0, 0, 0))
     peg_point_list = []
-
 
     for pt in range(0, num_points):
         delta = 360 / num_points
@@ -77,7 +76,7 @@ def prepare_image(path_to_image_file):
     base_img = image_file.resize((rescale_value, rescale_value)).convert('L')
 
     base_img = ImageOps.invert(base_img)
-    clean_image = Image.new('L', (rescale_value, rescale_value), color=(255))
+    clean_image = Image.new('L', (rescale_value, rescale_value), color=255)
 
     if show_algorithm_progress:
         plt.ion()
@@ -88,11 +87,16 @@ def prepare_image(path_to_image_file):
                                             circle_diameter_px/2,
                                             pegs_to_draw,
                                             base_img)
-    return base_img, clean_image, peg_points_list
+    return base_img, clean_image, peg_points_list, circle_diameter_px
+
 
 def post_process_image(image, begin_timestamp):
     from PIL import ImageDraw
     import datetime
+
+    # resize image to hardcoded 1500x1500 res
+    image = image.resize((1500,1500))
+
     cfg = load_configuration()
     peg_number = cfg['algo']['peg_number']
     num_iterations = cfg['algo']['num_iterations']
@@ -110,39 +114,42 @@ def post_process_image(image, begin_timestamp):
                    f"Image scale: {image_scale}\n" \
                    f"Contrast: {contrast}"
 
-    ImageDraw.Draw(image).text((20, 20), display_text, fill=(0))
+    ImageDraw.Draw(image).text((20, 20), display_text, fill=0)
     return image
 
 
-def simulate_weave(path_to_image):
+def simulate_weave(image_path):
     import datetime
     starting_time = datetime.datetime.now()
 
     import Simulation.algo
 
-
     cfg = load_configuration()
     starting_peg = int(cfg['algo']['starting_peg'])
     num_iterations = int(cfg['algo']['num_iterations'])
 
-    image, clean_image, point_list = prepare_image(path_to_image)
+    image, clean_image, point_list, new_circ_diameter = prepare_image(image_path)
 
     pattern = Simulation.algo.get_pattern(image,
                                           point_list,
                                           starting_peg,
                                           num_iterations,
                                           clean_image=clean_image)
-    post_process_image(clean_image, starting_time)
+    clean_image = post_process_image(clean_image, starting_time)
     clean_image.show()
 
-    return pattern
+    return pattern, new_circ_diameter
 
-def compile_file(pattern, image_name):
+
+def compile_file(pattern, image_path, circ_diameter):
     """
     Function that takes in a pattern and the settings in the configuration folder
     and creates a sim file containing the pattern and the required settings
     to recreate the image from scratch.
+
     :param pattern: A weave pattern as a list
+    :param image_path: Input file path
+    :param circ_diameter: Diameter of weave circle in pixels
     :return: N/A
     """
 
@@ -160,21 +167,19 @@ def compile_file(pattern, image_name):
     cfg = load_configuration()
     peg_number = cfg['algo']['peg_number']
     num_iterations = cfg['algo']['num_iterations']
-    image_scale = cfg['algo']['image_resize_square']
     contrast = int(cfg['algo']['contrast'])
-    circ_diameter = int(cfg['algo']['circle_diameter'])
+    circ_diameter = circ_diameter
 
     # Create header:
     header = f"Peg Numbers: {peg_number}\n" \
              f"Iterations: {num_iterations}\n" \
-             f"Image Scale: {image_scale}\n" \
              f"Contrast: {contrast}\n" \
-             f"Circle Diameter: {circ_diameter}\n;"
+             f"Circle Diameter_pixels: {circ_diameter}\n;"
 
     weave_pattern = ", ".join(map(str, pattern))
 
     # Create file:
-    stripped_img_name = str(image_name.split(".")[0])
+    stripped_img_name = str(image_path.split(".")[0])
     filename = f"{stripped_img_name}_s{peg_number}_{num_iterations}.wv"
     try:
         with open(filename, 'w+') as fp:
@@ -186,15 +191,5 @@ def compile_file(pattern, image_name):
 
 if __name__ == "__main__":
     path_to_image = "assets/cat.png"
-    final_pattern = simulate_weave(path_to_image)
-    compile_file(final_pattern, path_to_image)
-
-    # Todo:
-    # - Make contrast function to better represent color values of overlapping strings [V]
-    # - Implement ignore_nearest_neighbours from the configuration file. (make 'ignore list' and
-    #   check indexes) [V]
-    # - Make the weave pattern into a file [V]
-    # - Make a parser to read the file and create an image [V]
-	# - Super-resolution for the output image by scaling factor. [V]
-
-
+    final_pattern, new_circ_diameter_px = simulate_weave(path_to_image)
+    compile_file(final_pattern, path_to_image, new_circ_diameter_px)

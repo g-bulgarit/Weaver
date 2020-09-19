@@ -94,7 +94,7 @@ def set_all_pixels_black(input_image, pos1, pos2, override_contrast=None):
     draw_image = ImageDraw.Draw(input_image)
     for pixel in list_of_pixels_in_line:
         color = input_image.getpixel(pixel)
-        draw_image.point(pixel, fill=max(0,color-contrast_val))  # CONTRAST VALUE
+        draw_image.point(pixel, fill=max(0, color-contrast_val))  # CONTRAST VALUE
 
     return input_image
 
@@ -119,7 +119,7 @@ def generate_skip_list(current_index):
     # Check if the list will overflow
     if current_index + skip_amount > peg_amt:
         top_overflow = (current_index + skip_amount - peg_amt)
-    if current_index -skip_amount < 0:
+    if current_index - skip_amount < 0:
         bottom_overflow = abs(current_index - skip_amount)
 
     # Build the mask, filling in 1's where needed
