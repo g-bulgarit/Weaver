@@ -57,25 +57,35 @@ def prepare_image(path_to_image_file):
     cfg = load_configuration()
 
     pegs_to_draw = int(cfg['algo']['peg_number'])
-    img_size = int(cfg['algo']['image_resize_square'])
-    circle_diameter = int(cfg['algo']['circle_diameter'])
+    circle_diameter_px = int(cfg['algo']['circle_diameter'])
     show_algorithm_progress = cfg.getboolean('debug', 'show_algorithm_progress')
 
+    # Calculate the ratio of the image with respect to the thread.
+    thread_diameter = float(cfg['physical']['thread_diameter'])
+    image_physical_diameter = float(cfg['physical']['peg_circle_diameter'])
+    rescale_value = int(image_physical_diameter/thread_diameter)
 
+    # Calculate final size in px of the peg-circle
+    px_per_mm = circle_diameter_px/image_physical_diameter
+    adj_thread_size = px_per_mm * thread_diameter
+    px_rescale_value = 1/adj_thread_size
+
+    circle_diameter_px *= px_rescale_value  # Resize circle
+    circle_diameter_px = round(circle_diameter_px-10)
 
     image_file = Image.open(path_to_image_file)
-    base_img = image_file.resize((img_size, img_size)).convert('L')
+    base_img = image_file.resize((rescale_value, rescale_value)).convert('L')
 
     base_img = ImageOps.invert(base_img)
-    clean_image = Image.new('L', (img_size, img_size), color=(255))
+    clean_image = Image.new('L', (rescale_value, rescale_value), color=(255))
 
     if show_algorithm_progress:
         plt.ion()
         plt.imshow(np.asarray(base_img), cmap='Greys')
         plt.pause(0.2)
 
-    peg_points_list = draw_points_on_circle((img_size/2, img_size/2),
-                                            circle_diameter/2,
+    peg_points_list = draw_points_on_circle((rescale_value/2, rescale_value/2),
+                                            circle_diameter_px/2,
                                             pegs_to_draw,
                                             base_img)
     return base_img, clean_image, peg_points_list
@@ -175,7 +185,7 @@ def compile_file(pattern, image_name):
 
 
 if __name__ == "__main__":
-    path_to_image = "w.png"
+    path_to_image = "assets/cat.png"
     final_pattern = simulate_weave(path_to_image)
     compile_file(final_pattern, path_to_image)
 
