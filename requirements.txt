@@ -4,4 +4,4 @@ numpy==1.15.2
 
 matplotlib==3.0.0
 
-Pillow==8.1.1
+Pillow==8.2.0
