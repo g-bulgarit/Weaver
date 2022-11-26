@@ -1,6 +1,6 @@
 Gooey==1.0.3
 
-numpy==1.21.0
+numpy==1.22.0
 
 matplotlib==3.0.0
 
